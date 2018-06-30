@@ -1,0 +1,146 @@
+assume cs:code, ds:data, ss:stack        
+
+data segment
+        dw 1230,12666,3,10,46,38,0
+data ends
+
+stack segment
+        db 128 dup(0)
+stack ends
+
+string segment
+        db 10 dup('0'),0
+string ends
+
+code segment
+        start:
+              mov ax,stack
+              mov ss,ax
+              mov sp,128
+
+	      call clearScrn
+
+              call initRig
+
+              call showStrings
+
+
+              mov ax,4c00h
+              int 21h
+;=================================
+clearScrn:    call setClearScrnRig
+              mov cx,2000
+
+clearS:	      mov es:[di],ax
+	      add di,2
+
+	      loop clearS
+	      ret
+;=================================
+setClearScrnRig:
+	      mov ax,0b800h
+	      mov es,ax
+
+	      mov ax,0700h
+
+
+	      ret
+;================================
+showStrings:  mov bx,0
+              mov si,9
+              mov di,160*10+30*2
+
+              mov cx,6
+
+showString:   call show_word
+              add di,160
+              add bx,2
+
+              loop showString
+              ret
+;=====================================
+show_word:    push ax
+              push bx
+              push cx
+              push dx
+              push si
+              push di
+              push es
+              push ds
+
+              mov ax,ds:[bx]
+              mov dx,0
+
+              call calDiv
+
+              call setShowRig
+
+              call tData
+
+              pop ds
+              pop es
+              pop di
+              pop si
+              pop dx
+              pop cx
+              pop bx
+              pop ax
+
+              ret
+;===========================================
+tData:        push cx
+	      push ds
+	      push es
+	      push si
+	      push di
+
+show_wd:      mov cx,0
+              mov cl,ds:[si]
+              jcxz tDataRet
+              mov es:[di],cl
+              inc si
+              add di,2
+              jmp show_wd
+
+tDataRet:     pop di
+              pop si
+	      pop es
+              pop ds
+              pop cx
+
+              ret
+;===========================================
+setShowRig:   mov ax,string
+              mov ds,ax
+
+              mov ax,0b800h
+              mov es,ax
+
+              ret
+;========================================
+calDiv:       mov cx,10
+              div cx
+              add dl,30h
+              mov es:[si],dl
+              mov cx,ax
+              jcxz calDivRet
+              dec si
+              mov dx,0
+	      jmp calDiv
+
+              ret
+;=======================================
+calDivRet:
+
+              ret
+;=======================================
+initRig:      mov ax,data
+              mov ds,ax
+
+              mov ax,string
+              mov es,ax
+
+              ret
+
+code ends
+end start

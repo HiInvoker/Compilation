@@ -1,0 +1,53 @@
+assume cs:code, ds:data, ss:stack
+
+data segment
+        dd 1000000
+data ends
+
+stack segment stack
+        db 128 dup(0)
+stack ends
+
+code segment
+        start:  mov ax,stack
+                mov ss,ax
+                mov sp,128
+
+                call setRig
+
+
+                call showDiv
+
+
+                mov ax,4c00h
+                int 21h
+;===================================
+showDiv:        mov ax,ds:[si]
+                mov dx,ds:[si+2]
+
+                push ax
+                mov bp,sp
+
+                mov ax,dx
+                mov dx,0
+                div cx
+
+                push ax
+                mov ax,ss:[bp]
+                div cx
+
+                mov cx,dx
+                pop dx
+
+                ret
+;====================================
+setRig:
+                mov ax,data
+                mov ds,ax
+
+                mov si,0
+                mov cx,10
+
+                ret
+code ends
+end start
